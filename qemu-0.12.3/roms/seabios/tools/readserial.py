@@ -24,9 +24,7 @@ BITSPERBYTE = 10
 
 def readserial(infile, logfile, baudrate):
     lasttime = 0
-    byteadjust = 0.0
-    if ADJUSTBAUD:
-        byteadjust = float(BITSPERBYTE) / baudrate
+    byteadjust = float(BITSPERBYTE) / baudrate if ADJUSTBAUD else 0.0
     while 1:
         # Read data
         try:
@@ -91,15 +89,10 @@ def printUsage():
     sys.exit(1)
 
 def main():
-    serialport = 0
-    baud = 115200
     if len(sys.argv) > 3:
         printUsage()
-    if len(sys.argv) > 1:
-        serialport = sys.argv[1]
-    if len(sys.argv) > 2:
-        baud = int(sys.argv[2])
-
+    serialport = sys.argv[1] if len(sys.argv) > 1 else 0
+    baud = int(sys.argv[2]) if len(sys.argv) > 2 else 115200
     ser = serial.Serial(serialport, baud, timeout=0)
 
     logname = time.strftime("seriallog-%Y%m%d_%H%M%S.log")

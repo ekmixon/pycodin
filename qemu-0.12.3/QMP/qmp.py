@@ -20,7 +20,7 @@ class QEMUMonitorProtocol:
     def connect(self):
         self.sock.connect(self.filename)
         data = self.__json_read()
-        if data == None:
+        if data is None:
             raise QMPConnectError
         if not data.has_key('QMP'):
             raise QMPConnectError
@@ -37,7 +37,7 @@ class QEMUMonitorProtocol:
         cmd = self.__build_cmd(cmdline)
         self.__json_send(cmd)
         resp = self.__json_read()
-        if resp == None:
+        if resp is None:
             return
         elif resp.has_key('error'):
             return resp['error']
@@ -59,7 +59,7 @@ class QEMUMonitorProtocol:
     def __json_send(self, cmd):
         # XXX: We have to send any additional char, otherwise
         # the Server won't read our input
-        self.sock.send(json.dumps(cmd) + ' ')
+        self.sock.send(f'{json.dumps(cmd)} ')
 
     def __json_read(self):
         try:

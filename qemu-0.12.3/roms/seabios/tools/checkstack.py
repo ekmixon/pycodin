@@ -36,13 +36,23 @@ def calcmaxstack(funcs, funcaddr):
     info[2] = max
 
 hex_s = r'[0-9a-f]+'
-re_func = re.compile(r'^(?P<funcaddr>' + hex_s + r') <(?P<func>.*)>:$')
+re_func = re.compile(f'^(?P<funcaddr>{hex_s}) <(?P<func>.*)>:$')
 re_asm = re.compile(
-    r'^[ ]*(?P<insnaddr>' + hex_s
-    + r'):\t.*\t(addr32 )?(?P<insn>.+?)[ ]*((?P<calladdr>' + hex_s
-    + r') <(?P<ref>.*)>)?$')
+    (
+        (
+            (
+                f'^[ ]*(?P<insnaddr>{hex_s}'
+                + r'):\t.*\t(addr32 )?(?P<insn>.+?)[ ]*((?P<calladdr>'
+            )
+            + hex_s
+        )
+        + r') <(?P<ref>.*)>)?$'
+    )
+)
+
 re_usestack = re.compile(
-    r'^(push[f]?[lw])|(sub.* [$](?P<num>0x' + hex_s + r'),%esp)$')
+    f'^(push[f]?[lw])|(sub.* [$](?P<num>0x{hex_s}),%esp)$'
+)
 
 def calc():
     # funcs[funcaddr] = [funcname, basicstackusage, maxstackusage

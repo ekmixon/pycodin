@@ -323,8 +323,8 @@ current_callback = default_call
 
 instruction_callback = current_callback
 
-addr_callback = dict()
-offset_callback = dict()
+addr_callback = {}
+offset_callback = {}
 
 #egg environ
 environ = None
@@ -422,7 +422,7 @@ def final_allocation_list ( list_allocation ):
         counter += 1 if type == 'c' else -1
         if ( type == 'c' and counter == 1 ) or ( type == 'f' and counter == 0 ):
             end_list.append ( addr )
-    
+
     return zip ( end_list [::2], end_list [1::2] )
     
 def calculate_pages ( addr_len ):
@@ -450,7 +450,7 @@ def init_vmx86_linux( mem_size = 0x0, addr = 0x0 ):
     global page_list 
 
     global environ
-    if _pyqemu == None:
+    if _pyqemu is None:
         _pyqemu = ctypes.cdll.LoadLibrary( 'pyqemulib' )
         _ll_set_callback( pyqemu_callback )
         _pyqemu.init_vm.restype = ctypes.POINTER( CPUX86State )
@@ -458,7 +458,7 @@ def init_vmx86_linux( mem_size = 0x0, addr = 0x0 ):
         env = pyCPUX86State( full_env )
         environ = env
 
-    
+
     environ.eip = addr
     for addr in page_list:
         allocate_memory  ( addr, page_list[ addr ]  )
@@ -521,26 +521,26 @@ def _hooker ( *args ):
 
 
 def register_function_hook_handler( virtual_address , python_function , c_convention , ret_type, *args ):
-   IARG_END = 0
-   arg_types = { 
-                 IARG_PTR : ctypes.c_void_p,
-                 IARG_BOOL : ctypes.c_int32,
-                 IARG_UINT32 : ctypes.c_uint32,
-                 IARG_INT : ctypes.c_int,
-                 IARG_LONG : ctypes.c_long,
-                 IARG_ULONG : ctypes.c_ulong 
-               } 
-   
-   ctypes_args = tuple( [ arg_types[ argument ] for argument in args ] )
-   
-   #this must be a WINFUNCTYPE to clean the stack 
-   func_ptr = ctypes.WINFUNCTYPE( arg_types [ ret_type ], *ctypes_args ) 
+    IARG_END = 0
+    arg_types = { 
+                  IARG_PTR : ctypes.c_void_p,
+                  IARG_BOOL : ctypes.c_int32,
+                  IARG_UINT32 : ctypes.c_uint32,
+                  IARG_INT : ctypes.c_int,
+                  IARG_LONG : ctypes.c_long,
+                  IARG_ULONG : ctypes.c_ulong 
+                } 
 
-   #func_ptr = ctypes.CFUNCTYPE( arg_types [ ret_type ], *ctypes_args )
-   #_call = func_ptr ( python_function )
-   hookers_list [ virtual_address ] = ( python_function, ret_type, args ) 
-   _call = func_ptr ( _hooker )
-   _pyqemu.register_function_hook_handler( virtual_address , len( args ) ,  _call, ret_type, *( args ) )
+    ctypes_args = tuple(arg_types[ argument ] for argument in args)
+
+    #this must be a WINFUNCTYPE to clean the stack 
+    func_ptr = ctypes.WINFUNCTYPE( arg_types [ ret_type ], *ctypes_args ) 
+
+    #func_ptr = ctypes.CFUNCTYPE( arg_types [ ret_type ], *ctypes_args )
+    #_call = func_ptr ( python_function )
+    hookers_list [ virtual_address ] = ( python_function, ret_type, args )
+    _call = func_ptr ( _hooker )
+    _pyqemu.register_function_hook_handler( virtual_address , len( args ) ,  _call, ret_type, *( args ) )
  
 
 def allocate_fs ( addr, fs ):

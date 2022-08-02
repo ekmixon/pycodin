@@ -192,11 +192,11 @@ def doLayout16(sections, outname):
 # Return the subset of sections with a given name prefix
 def getSectionsPrefix(sections, prefix):
     lp = len(prefix)
-    out = []
-    for size, align, name in sections:
-        if name[:lp] == prefix:
-            out.append((size, align, name))
-    return out
+    return [
+        (size, align, name)
+        for size, align, name in sections
+        if name[:lp] == prefix
+    ]
 
 # Layout the 32bit segmented code.  This places the code as high as possible.
 def doLayout32seg(sections, outname, endat):

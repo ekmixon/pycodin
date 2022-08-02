@@ -189,8 +189,7 @@ class TestLoader():
     def getTestCases(self, testCaseClass):
         """get a class and return a """
         test_methods = self._get_test_methods_from(testCaseClass)
-        dic_methods = self._parse_methods(test_methods)
-        return dic_methods
+        return self._parse_methods(test_methods)
 
     def _get_test_methods_from(self, testClass):
         """get the methods thats begin with test word. 
@@ -199,8 +198,11 @@ class TestLoader():
         """
 
         len_prefix = len(self._test_method_prefix)
-        test_methods = [method[len_prefix + len(self._delim):] for method in dir(testClass) if method.startswith(self._test_method_prefix)]
-        return test_methods
+        return [
+            method[len_prefix + len(self._delim) :]
+            for method in dir(testClass)
+            if method.startswith(self._test_method_prefix)
+        ]
 
     def _parse_methods(self, methods):
         """ revice an instruction_numbero or offset_number and return a dictionary:
@@ -270,11 +272,10 @@ class TestCaseEGG():
 
     def _capture_traps(self, trapnr, cpuenv):
         """convert to Environ class a cpuenv then call handletrap method that is overwrited by tester"""
-        CONTINUE = 1
         environ = Environ(cpuenv)
         self.handletrap(trapnr, environ)
         self._instruction_number += 1
-        return CONTINUE
+        return 1
 
     def _set_callback(self, callback):
         """set a python callback for a c function"""
@@ -298,8 +299,8 @@ class TestCaseEGG():
 class TestCase(TestCaseEGG):
     def assert_equal( self , valueOrExpression , value , error_msg ):
         """this method is a testcase method"""
-        if not valueOrExpression == value:
-            self.error( error_msg +  " obtained : %s  expceted : %s " % ( valueOrExpression, value ) )
+        if valueOrExpression != value:
+            self.error(error_msg + f" obtained : {valueOrExpression}  expceted : {value} ")
     
     def error( self , error_msg ):
         self.errors+=1

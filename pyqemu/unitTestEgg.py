@@ -28,8 +28,7 @@ class TestLoader():
     def getTestCases( self, testCaseClass ):
         """get a class and return a """
         test_methods = self._get_test_methods_from( testCaseClass )
-        dic_methods = self._parse_methods( test_methods )
-        return dic_methods
+        return self._parse_methods( test_methods )
 
     def _get_test_methods_from(self, testClass):
         """get the methods thats begin with test word. 
@@ -38,8 +37,11 @@ class TestLoader():
         """
 
         len_prefix = len( self._test_method_prefix )
-        test_methods = [ method [ len_prefix + len(self._delim): ] for method in dir(testClass) if method.startswith( self._test_method_prefix ) ]
-        return test_methods
+        return [
+            method[len_prefix + len(self._delim) :]
+            for method in dir(testClass)
+            if method.startswith(self._test_method_prefix)
+        ]
 
     def _parse_methods(self, methods):
         """ recive an instruction_number or offset_number and return a dictionary:
@@ -52,10 +54,10 @@ class TestLoader():
                 type_test = self._get_prefix_type(method)
                 param_number = self._get_suffix_number(method)
                 test_dic[type_test][param_number] = self._test_method_prefix + self._delim + method
-            
+
             else:
-                raise TypeTestError, "Invalid Type Test %s " % method 
-             
+                raise (TypeTestError, f"Invalid Type Test {method} ") 
+
         return test_dic 
    
     def _get_prefix_type(self, method):
@@ -92,14 +94,14 @@ class TestCaseEGG():
         self.code_addr = 0x0
         self.code_size = 0x2000
         self.core_entry_point = 0x0
-        
+
         self.stack_addr = 0x0
         self.stack_size = 0x200
 
         self.fs_addr = 0x0
         self.fs_size = 0x200
 
-        self.extra_codes = list ()
+        self.extra_codes = []
 
         loader = TestLoader ( )
         self._test = loader.getTestCases ( self )
@@ -121,15 +123,13 @@ class TestCaseEGG():
         self.configure_stack ( )
 
         self.configure_segments ( )
-        
-        #init vm and make environ
-        if self.code_size < len ( self.egg ):
-            self.code_size = len ( self.egg )
 
+        #init vm and make environ
+        self.code_size = max(self.code_size, len ( self.egg ))
         pyqemu.init_vmx86_linux ( self.code_size, addr = self.code_addr )
-        
+
         pyqemu.allocate_stack ( self.stack_addr, self.stack_size )
-         
+
         pyqemu.allocate_fs ( self.fs_addr, self.fs )
 
         self._add_extra_codes ( )
@@ -141,11 +141,11 @@ class TestCaseEGG():
 
         pyqemu.exec_code ( self.egg, addr = self.code_addr, entry_point = self.code_entry_point )
     
-    def _add_extra_codes ( self ):
+    def _add_extra_codes( self ):
         for addr, code in self.extra_codes:
             pyqemu.revase_code ( code, addr )
-        
-        self.extra_codes = list()
+
+        self.extra_codes = []
 
     def map_memory ( self, dict_addr_len ):
         pyqemu.map_memory ( dict_addr_len )
@@ -244,7 +244,7 @@ class TestCaseEGG():
 class TestCase ( TestCaseEGG ):
     def assert_equal( self , valueOrExpression , value , error_msg ):
         """this method is a testcase method"""
-        if not valueOrExpression == value:
+        if valueOrExpression != value:
             self.error( error_msg +  " obtained : %x  expected : %x " % ( valueOrExpression, value ) )
             exit()
 
